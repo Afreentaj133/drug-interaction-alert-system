@@ -4,10 +4,17 @@ const form = document.getElementById("interaction-form");
 const loading = document.getElementById("loading");
 const resultSection = document.getElementById("result-section");
 const historyBody = document.getElementById("history-body");
+const submitButton = form.querySelector('button[type="submit"]');
+
 
 async function loadDrugs() {
   try {
     const response = await fetch("/api/drugs");
+
+    if (!response.ok) {
+      throw new Error("Unable to load the drug list.");
+    }
+
     const data = await response.json();
 
     data.drugs.forEach((drug) => {
@@ -23,17 +30,40 @@ async function loadDrugs() {
     });
   } catch (error) {
     alert("Could not load the drug list. Is the backend running?");
+    console.error(error);
   }
 }
 
+
 function setSeverityBadge(severity) {
   const badge = document.getElementById("severity-badge");
-  badge.textContent = severity;
-  badge.className = "severity-badge";
 
-  const className = severity.toLowerCase();
-  badge.classList.add(className);
+  const severityClass = severity
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+
+  badge.textContent = severity;
+  badge.className = `severity-badge ${severityClass}`;
 }
+
+
+function setInteractionStatus(interactionDetected) {
+  const statusElement = document.getElementById("interaction-status");
+
+  if (!statusElement) {
+    return;
+  }
+
+  if (interactionDetected) {
+    statusElement.textContent = "Potential interaction detected";
+    statusElement.className = "interaction-status detected";
+  } else {
+    statusElement.textContent =
+      "No significant interaction predicted by this prototype";
+    statusElement.className = "interaction-status no-alert";
+  }
+}
+
 
 function renderResult(result) {
   document.getElementById("pair-title").textContent =
@@ -44,11 +74,15 @@ function renderResult(result) {
 
   document.getElementById("source").textContent = result.source;
   document.getElementById("mechanism").textContent = result.mechanism;
-  document.getElementById("clinical-effect").textContent = result.clinical_effect;
-  document.getElementById("recommendation").textContent = result.recommendation;
-  document.getElementById("alternative").textContent = result.safer_alternative;
+  document.getElementById("clinical-effect").textContent =
+    result.clinical_effect;
+  document.getElementById("recommendation").textContent =
+    result.recommendation;
+  document.getElementById("alternative").textContent =
+    result.safer_alternative;
 
   setSeverityBadge(result.severity);
+  setInteractionStatus(result.interaction_detected);
 
   const explanationList = document.getElementById("explanation-list");
   explanationList.innerHTML = "";
@@ -60,14 +94,29 @@ function renderResult(result) {
   });
 
   resultSection.classList.remove("hidden");
-  resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  resultSection.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
 }
+
+
+function createCell(value) {
+  const cell = document.createElement("td");
+  cell.textContent = value;
+  return cell;
+}
+
 
 async function loadHistory() {
   try {
     const response = await fetch("/api/recent-alerts");
-    const data = await response.json();
 
+    if (!response.ok) {
+      throw new Error("Unable to load alert history.");
+    }
+
+    const data = await response.json();
     historyBody.innerHTML = "";
 
     if (!data.alerts.length) {
@@ -78,19 +127,24 @@ async function loadHistory() {
 
     data.alerts.forEach((alert) => {
       const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${alert.drug_a} + ${alert.drug_b}</td>
-        <td>${alert.severity}</td>
-        <td>${(alert.risk_probability * 100).toFixed(1)}%</td>
-        <td>${alert.source}</td>
-        <td>${alert.created_at}</td>
-      `;
+
+      row.appendChild(
+        createCell(`${alert.drug_a} + ${alert.drug_b}`)
+      );
+      row.appendChild(createCell(alert.severity));
+      row.appendChild(
+        createCell(`${(alert.risk_probability * 100).toFixed(1)}%`)
+      );
+      row.appendChild(createCell(alert.source));
+      row.appendChild(createCell(alert.created_at));
+
       historyBody.appendChild(row);
     });
   } catch (error) {
-    console.error("Could not load history", error);
+    console.error("Could not load history.", error);
   }
 }
+
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -110,6 +164,8 @@ form.addEventListener("submit", async (event) => {
 
   loading.classList.remove("hidden");
   resultSection.classList.add("hidden");
+  submitButton.disabled = true;
+  submitButton.textContent = "Analyzing...";
 
   try {
     const response = await fetch("/api/check-interaction", {
@@ -126,19 +182,28 @@ form.addEventListener("submit", async (event) => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.detail || "Unable to analyse this drug pair.");
+      throw new Error(
+        data.detail || "Unable to analyze this drug pair."
+      );
     }
 
     renderResult(data);
-    loadHistory();
+    await loadHistory();
   } catch (error) {
     alert(error.message);
+    console.error(error);
   } finally {
     loading.classList.add("hidden");
+    submitButton.disabled = false;
+    submitButton.textContent = "Check Interaction";
   }
 });
 
-document.getElementById("refresh-history").addEventListener("click", loadHistory);
+
+document
+  .getElementById("refresh-history")
+  .addEventListener("click", loadHistory);
+
 
 loadDrugs();
 loadHistory();
