@@ -4,7 +4,70 @@ const form = document.getElementById("interaction-form");
 const loading = document.getElementById("loading");
 const resultSection = document.getElementById("result-section");
 const historyBody = document.getElementById("history-body");
-const submitButton = form.querySelector('button[type="submit"]');
+const submitButton = document.getElementById("analyze-button");
+const refreshHistoryButton = document.getElementById("refresh-history");
+
+
+function formatRiskScore(probability) {
+  const numericProbability = Number(probability);
+
+  if (Number.isNaN(numericProbability)) {
+    return "0.0%";
+  }
+
+  return `${(numericProbability * 100).toFixed(1)}%`;
+}
+
+
+function getSeverityClass(severity) {
+  return String(severity || "Not Assessed")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-");
+}
+
+
+function setSeverityBadge(severity) {
+  const badge = document.getElementById("severity-badge");
+  const normalizedSeverity = severity || "Not Assessed";
+
+  badge.textContent = normalizedSeverity;
+  badge.className = `severity-badge ${getSeverityClass(normalizedSeverity)}`;
+}
+
+
+function setInteractionStatus(interactionDetected) {
+  const statusElement = document.getElementById("interaction-status");
+
+  if (interactionDetected) {
+    statusElement.textContent = "Potential interaction detected";
+    statusElement.className = "interaction-status detected";
+  } else {
+    statusElement.textContent =
+      "No significant interaction predicted by this prototype";
+    statusElement.className = "interaction-status no-alert";
+  }
+}
+
+
+function updateRiskMeter(probability) {
+  const numericProbability = Number(probability);
+  const percentage = Number.isNaN(numericProbability)
+    ? 0
+    : Math.min(Math.max(numericProbability * 100, 0), 100);
+
+  document.getElementById("risk-meter-value").textContent =
+    `${percentage.toFixed(1)}%`;
+
+  document.getElementById("risk-fill").style.width =
+    `${percentage}%`;
+}
+
+
+function clearDrugOptions() {
+  drugASelect.innerHTML = '<option value="">Select Drug A</option>';
+  drugBSelect.innerHTML = '<option value="">Select Drug B</option>';
+}
 
 
 async function loadDrugs() {
@@ -12,10 +75,16 @@ async function loadDrugs() {
     const response = await fetch("/api/drugs");
 
     if (!response.ok) {
-      throw new Error("Unable to load the drug list.");
+      throw new Error("Unable to load the prototype drug database.");
     }
 
     const data = await response.json();
+
+    if (!Array.isArray(data.drugs)) {
+      throw new Error("The backend returned an invalid drug list.");
+    }
+
+    clearDrugOptions();
 
     data.drugs.forEach((drug) => {
       const optionA = document.createElement("option");
@@ -29,71 +98,61 @@ async function loadDrugs() {
       drugBSelect.appendChild(optionB);
     });
   } catch (error) {
-    alert("Could not load the drug list. Is the backend running?");
-    console.error(error);
+    console.error("Could not load drugs:", error);
+    alert(
+      "Could not load the drug list. Please confirm that the backend is running."
+    );
   }
 }
 
 
-function setSeverityBadge(severity) {
-  const badge = document.getElementById("severity-badge");
-
-  const severityClass = severity
-    .toLowerCase()
-    .replace(/\s+/g, "-");
-
-  badge.textContent = severity;
-  badge.className = `severity-badge ${severityClass}`;
-}
-
-
-function setInteractionStatus(interactionDetected) {
-  const statusElement = document.getElementById("interaction-status");
-
-  if (!statusElement) {
-    return;
-  }
-
-  if (interactionDetected) {
-    statusElement.textContent = "Potential interaction detected";
-    statusElement.className = "interaction-status detected";
-  } else {
-    statusElement.textContent =
-      "No significant interaction predicted by this prototype";
-    statusElement.className = "interaction-status no-alert";
-  }
-}
-
-
-function renderResult(result) {
-  document.getElementById("pair-title").textContent =
-    `${result.drug_a} + ${result.drug_b}`;
-
-  document.getElementById("risk-score").textContent =
-    `${(result.risk_probability * 100).toFixed(1)}%`;
-
-  document.getElementById("source").textContent = result.source;
-  document.getElementById("mechanism").textContent = result.mechanism;
-  document.getElementById("clinical-effect").textContent =
-    result.clinical_effect;
-  document.getElementById("recommendation").textContent =
-    result.recommendation;
-  document.getElementById("alternative").textContent =
-    result.safer_alternative;
-
-  setSeverityBadge(result.severity);
-  setInteractionStatus(result.interaction_detected);
-
+function renderExplanation(explanation) {
   const explanationList = document.getElementById("explanation-list");
   explanationList.innerHTML = "";
 
-  result.explanation.forEach((item) => {
+  const items = Array.isArray(explanation)
+    ? explanation
+    : ["No feature-level explanation was returned by the prototype."];
+
+  items.forEach((item) => {
     const listItem = document.createElement("li");
     listItem.textContent = item;
     explanationList.appendChild(listItem);
   });
+}
+
+
+function renderResult(result) {
+  const riskScore = formatRiskScore(result.risk_probability);
+
+  document.getElementById("pair-title").textContent =
+    `${result.drug_a} + ${result.drug_b}`;
+
+  document.getElementById("risk-score").textContent = riskScore;
+
+  document.getElementById("source").textContent =
+    result.source || "Machine-learning prototype";
+
+  document.getElementById("mechanism").textContent =
+    result.mechanism || "No mechanism information available.";
+
+  document.getElementById("clinical-effect").textContent =
+    result.clinical_effect || "No clinical-effect information available.";
+
+  document.getElementById("recommendation").textContent =
+    result.recommendation || "Clinical review is recommended.";
+
+  document.getElementById("alternative").textContent =
+    result.safer_alternative ||
+    "No alternative information is available in the prototype dataset.";
+
+  setSeverityBadge(result.severity);
+  setInteractionStatus(Boolean(result.interaction_detected));
+  updateRiskMeter(result.risk_probability);
+  renderExplanation(result.explanation);
 
   resultSection.classList.remove("hidden");
+
   resultSection.scrollIntoView({
     behavior: "smooth",
     block: "start"
@@ -101,9 +160,21 @@ function renderResult(result) {
 }
 
 
-function createCell(value) {
+function createTableCell(value) {
   const cell = document.createElement("td");
   cell.textContent = value;
+  return cell;
+}
+
+
+function createSeverityCell(severity) {
+  const cell = document.createElement("td");
+  const badge = document.createElement("span");
+
+  badge.textContent = severity || "Not Assessed";
+  badge.className = `severity-badge ${getSeverityClass(severity)}`;
+
+  cell.appendChild(badge);
   return cell;
 }
 
@@ -117,55 +188,95 @@ async function loadHistory() {
     }
 
     const data = await response.json();
+    const alerts = Array.isArray(data.alerts) ? data.alerts : [];
+
     historyBody.innerHTML = "";
 
-    if (!data.alerts.length) {
-      historyBody.innerHTML =
-        '<tr><td colspan="5">No checks yet.</td></tr>';
+    if (alerts.length === 0) {
+      const row = document.createElement("tr");
+      const cell = document.createElement("td");
+
+      cell.colSpan = 5;
+      cell.textContent = "No checks have been saved yet.";
+
+      row.appendChild(cell);
+      historyBody.appendChild(row);
       return;
     }
 
-    data.alerts.forEach((alert) => {
+    alerts.forEach((alert) => {
       const row = document.createElement("tr");
 
       row.appendChild(
-        createCell(`${alert.drug_a} + ${alert.drug_b}`)
+        createTableCell(`${alert.drug_a} + ${alert.drug_b}`)
       );
-      row.appendChild(createCell(alert.severity));
+
+      row.appendChild(createSeverityCell(alert.severity));
+
       row.appendChild(
-        createCell(`${(alert.risk_probability * 100).toFixed(1)}%`)
+        createTableCell(formatRiskScore(alert.risk_probability))
       );
-      row.appendChild(createCell(alert.source));
-      row.appendChild(createCell(alert.created_at));
+
+      row.appendChild(
+        createTableCell(alert.source || "Prototype prediction")
+      );
+
+      row.appendChild(
+        createTableCell(alert.created_at || "Not available")
+      );
 
       historyBody.appendChild(row);
     });
   } catch (error) {
-    console.error("Could not load history.", error);
+    console.error("Could not load history:", error);
+
+    historyBody.innerHTML = "";
+
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+
+    cell.colSpan = 5;
+    cell.textContent =
+      "Could not load alert history. Please refresh and try again.";
+
+    row.appendChild(cell);
+    historyBody.appendChild(row);
   }
+}
+
+
+function setLoadingState(isLoading) {
+  if (isLoading) {
+    loading.classList.remove("hidden");
+    submitButton.disabled = true;
+    submitButton.textContent = "Analysing Interaction...";
+    return;
+  }
+
+  loading.classList.add("hidden");
+  submitButton.disabled = false;
+  submitButton.textContent = "Check Interaction";
 }
 
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const drugA = drugASelect.value;
-  const drugB = drugBSelect.value;
+  const drugA = drugASelect.value.trim();
+  const drugB = drugBSelect.value.trim();
 
   if (!drugA || !drugB) {
-    alert("Please select both drugs.");
+    alert("Please select both Drug A and Drug B.");
     return;
   }
 
-  if (drugA === drugB) {
+  if (drugA.toLowerCase() === drugB.toLowerCase()) {
     alert("Please select two different drugs.");
     return;
   }
 
-  loading.classList.remove("hidden");
+  setLoadingState(true);
   resultSection.classList.add("hidden");
-  submitButton.disabled = true;
-  submitButton.textContent = "Analyzing...";
 
   try {
     const response = await fetch("/api/check-interaction", {
@@ -183,26 +294,32 @@ form.addEventListener("submit", async (event) => {
 
     if (!response.ok) {
       throw new Error(
-        data.detail || "Unable to analyze this drug pair."
+        data.detail || "Unable to analyse this drug pair."
       );
     }
 
     renderResult(data);
     await loadHistory();
   } catch (error) {
-    alert(error.message);
-    console.error(error);
+    console.error("Prediction request failed:", error);
+    alert(error.message || "Something went wrong while analysing the drug pair.");
   } finally {
-    loading.classList.add("hidden");
-    submitButton.disabled = false;
-    submitButton.textContent = "Check Interaction";
+    setLoadingState(false);
   }
 });
 
 
-document
-  .getElementById("refresh-history")
-  .addEventListener("click", loadHistory);
+refreshHistoryButton.addEventListener("click", async () => {
+  refreshHistoryButton.disabled = true;
+  refreshHistoryButton.textContent = "Refreshing...";
+
+  try {
+    await loadHistory();
+  } finally {
+    refreshHistoryButton.disabled = false;
+    refreshHistoryButton.textContent = "↻ Refresh";
+  }
+});
 
 
 loadDrugs();

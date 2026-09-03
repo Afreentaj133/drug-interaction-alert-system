@@ -1,141 +1,332 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Drug Interaction Alert System</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <meta
+    name="description"
+    content="MediSafe AI is an educational machine-learning prototype for drug-pair interaction screening."
+  >
+
+  <title>MediSafe AI | Drug Interaction Alert System</title>
+
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/script.js" defer></script>
 </head>
 
 <body>
-  <header class="header">
-    <div>
-      <p class="eyebrow">ML-ASSISTED CLINICAL DECISION SUPPORT</p>
-      <h1>Drug Interaction Alert System</h1>
-      <p class="subtitle">
-        Educational prototype for drug-pair interaction screening
-      </p>
-    </div>
+  <header class="navbar">
+    <a class="brand" href="#home" aria-label="MediSafe AI home">
+      <span class="brand-icon">✚</span>
+
+      <span>
+        <strong>MediSafe AI</strong>
+        <small>Drug Interaction Alert System</small>
+      </span>
+    </a>
+
+    <nav class="nav-links" aria-label="Primary navigation">
+      <a href="#checker">Check Interaction</a>
+      <a href="#history">Alert History</a>
+      <a href="#about">About</a>
+    </nav>
+
+    <span class="status-pill">
+      <span class="status-dot"></span>
+      Prototype Online
+    </span>
   </header>
 
-  <main class="container">
-    <section class="card">
-      <h2>Check a Drug Pair</h2>
+  <section id="home" class="hero">
+    <div class="hero-content">
+      <p class="eyebrow">ML-ASSISTED CLINICAL DECISION SUPPORT</p>
 
-      <form id="interaction-form">
-        <div class="form-grid">
-          <div>
+      <h1>Clearer drug interaction screening for safer medication review.</h1>
+
+      <p class="hero-description">
+        Screen a pair of medicines for potential interaction risk, view
+        severity-based alerts, and understand the structured drug-risk
+        factors used by this educational machine-learning prototype.
+      </p>
+
+      <div class="hero-actions">
+        <a class="primary-button" href="#checker">
+          Check a Drug Pair
+        </a>
+
+        <a class="secondary-button" href="#history">
+          View Alert History
+        </a>
+      </div>
+
+      <div class="hero-stats">
+        <div>
+          <strong>20+</strong>
+          <span>Prototype medicines</span>
+        </div>
+
+        <div>
+          <strong>ML</strong>
+          <span>Risk scoring</span>
+        </div>
+
+        <div>
+          <strong>AI</strong>
+          <span>Feature explanations</span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="hero-card" aria-label="Application workflow preview">
+      <div class="mini-card-header">
+        <span>Interaction screening workflow</span>
+        <span class="live-indicator">● Demo</span>
+      </div>
+
+      <div class="mini-drug-row">
+        <span>Step 1</span>
+        <strong>Select Drug A</strong>
+      </div>
+
+      <div class="mini-drug-row">
+        <span>Step 2</span>
+        <strong>Select Drug B</strong>
+      </div>
+
+      <div class="mini-alert">
+        <span>Step 3</span>
+        <strong>Review risk alert</strong>
+      </div>
+    </aside>
+  </section>
+
+  <main>
+    <section id="checker" class="app-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">DRUG-PAIR SCREENING</p>
+
+          <h2>Check a Drug Pair</h2>
+
+          <p>
+            Select two different medicines from the prototype database to
+            receive an ML-assisted interaction assessment.
+          </p>
+        </div>
+      </div>
+
+      <article class="checker-card">
+        <form id="interaction-form" class="interaction-form">
+          <div class="form-group">
             <label for="drugA">Drug A</label>
-            <select id="drugA" required>
+
+            <select id="drugA" name="drug_a" required>
               <option value="">Select Drug A</option>
             </select>
           </div>
 
-          <div>
+          <div class="form-group">
             <label for="drugB">Drug B</label>
-            <select id="drugB" required>
+
+            <select id="drugB" name="drug_b" required>
               <option value="">Select Drug B</option>
             </select>
           </div>
+
+          <button id="analyze-button" class="analyze-button" type="submit">
+            Check Interaction
+          </button>
+        </form>
+
+        <div class="prototype-notice">
+          <span class="notice-icon">ⓘ</span>
+
+          <p>
+            This is an educational prototype. It does not replace a doctor,
+            pharmacist, official drug database, prescribing guideline, or
+            professional clinical judgment.
+          </p>
         </div>
 
-        <button id="check-button" type="submit">
-          Check Interaction
-        </button>
-      </form>
-
-      <p class="disclaimer">
-        This is an educational prototype. It does not replace a doctor,
-        pharmacist, official drug database, or clinical judgment.
-      </p>
+        <div id="loading" class="loading hidden" aria-live="polite">
+          <span class="loading-spinner"></span>
+          <span>Analysing drug-pair risk…</span>
+        </div>
+      </article>
     </section>
 
-    <section id="loading" class="loading hidden">
-      Analysing drug-pair risk…
-    </section>
-
-    <section id="result-section" class="hidden">
-      <div id="result-card" class="card result-card">
-        <div class="result-heading">
-          <div>
-            <p class="eyebrow">INTERACTION ASSESSMENT</p>
-            <h2 id="pair-title"></h2>
-          </div>
-          <span id="severity-badge" class="severity-badge"></span>
-        </div>
-
-        <div class="score-box">
-          <span>ML-assisted risk score</span>
-          <strong id="risk-score"></strong>
-        </div>
-
-        <div class="result-grid">
-          <article>
-            <h3>Source</h3>
-            <p id="source"></p>
-          </article>
-
-          <article>
-            <h3>Mechanism / Rationale</h3>
-            <p id="mechanism"></p>
-          </article>
-
-          <article>
-            <h3>Possible Clinical Effect</h3>
-            <p id="clinical-effect"></p>
-          </article>
-
-          <article>
-            <h3>Recommended Action</h3>
-            <p id="recommendation"></p>
-          </article>
-        </div>
-
-        <article class="explanation-box">
-          <h3>Explainable AI / Feature Indicators</h3>
-          <ul id="explanation-list"></ul>
-        </article>
-
-        <article class="alternative-box">
-          <h3>Lower-risk Alternative Information</h3>
-          <p id="alternative"></p>
-        </article>
-      </div>
-    </section>
-
-    <section class="card">
+    <section
+      id="result-section"
+      class="app-section hidden"
+      aria-live="polite"
+    >
       <div class="section-heading">
-        <h2>Recent Alert History</h2>
-        <button id="refresh-history" class="secondary-button">
-          Refresh
-        </button>
+        <div>
+          <p class="eyebrow">INTERACTION ASSESSMENT</p>
+          <h2>Analysis Result</h2>
+        </div>
       </div>
 
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Drug Pair</th>
-              <th>Severity</th>
-              <th>Risk Score</th>
-              <th>Source</th>
-              <th>Checked At</th>
-            </tr>
-          </thead>
-          <tbody id="history-body">
-            <tr>
-              <td colspan="5">No checks yet.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <article class="result-card">
+        <div class="result-top">
+          <div>
+            <p class="result-kicker">ML-assisted risk score</p>
+
+            <h3 id="pair-title">Selected Drug Pair</h3>
+
+            <p id="interaction-status" class="interaction-status">
+              Awaiting analysis
+            </p>
+          </div>
+
+          <div class="result-score">
+            <span>Risk Score</span>
+            <strong id="risk-score">0.0%</strong>
+          </div>
+        </div>
+
+        <div class="result-content">
+          <div class="result-meta">
+            <span id="severity-badge" class="severity-badge not-assessed">
+              Not Assessed
+            </span>
+
+            <span class="source-label">
+              Source:
+              <span id="source">Awaiting analysis</span>
+            </span>
+          </div>
+
+          <div class="risk-meter">
+            <div class="risk-meter-header">
+              <span>Predicted interaction risk</span>
+              <strong id="risk-meter-value">0.0%</strong>
+            </div>
+
+            <div class="risk-track">
+              <div
+                id="risk-fill"
+                class="risk-fill"
+                style="width: 0%;"
+              ></div>
+            </div>
+          </div>
+
+          <div class="result-grid">
+            <div class="info-block">
+              <h4>Mechanism / Rationale</h4>
+              <p id="mechanism">No result available yet.</p>
+            </div>
+
+            <div class="info-block">
+              <h4>Possible Clinical Effect</h4>
+              <p id="clinical-effect">No result available yet.</p>
+            </div>
+
+            <div class="info-block">
+              <h4>Recommended Action</h4>
+              <p id="recommendation">No result available yet.</p>
+            </div>
+
+            <div class="info-block">
+              <h4>Alternative Information</h4>
+              <p id="alternative">No result available yet.</p>
+            </div>
+
+            <div class="info-block full-width">
+              <h4>Explainable AI / Feature Indicators</h4>
+
+              <ul id="explanation-list" class="explanation-list">
+                <li>No feature explanation available yet.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="result-disclaimer">
+            <span>ⓘ</span>
+            <p>
+              This result is generated by an educational ML-assisted prototype.
+              It must be reviewed by a qualified healthcare professional before
+              any clinical decision is made.
+            </p>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section id="history" class="app-section">
+      <article class="history-card">
+        <div class="history-toolbar">
+          <div>
+            <p class="eyebrow">SAVED ANALYSES</p>
+            <h3>Recent Alert History</h3>
+            <p>
+              Latest drug-pair interaction checks stored by the prototype.
+            </p>
+          </div>
+
+          <button
+            id="refresh-history"
+            class="refresh-button"
+            type="button"
+          >
+            ↻ Refresh
+          </button>
+        </div>
+
+        <div class="table-scroll">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Drug Pair</th>
+                <th>Severity</th>
+                <th>Risk Score</th>
+                <th>Source</th>
+                <th>Checked At</th>
+              </tr>
+            </thead>
+
+            <tbody id="history-body">
+              <tr>
+                <td colspan="5">Loading alert history…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section id="about" class="app-section">
+      <article class="about-card">
+        <p class="eyebrow">ABOUT THE PROJECT</p>
+
+        <h3>Educational ML-assisted clinical decision support</h3>
+
+        <p>
+          MediSafe AI is a final-year academic project that demonstrates a
+          web-based drug interaction screening workflow. It combines a local
+          curated interaction dataset, structured drug-risk features, a trained
+          machine-learning model, human-readable explanations, and SQLite-based
+          alert history.
+        </p>
+
+        <div class="about-tags">
+          <span>Python</span>
+          <span>FastAPI</span>
+          <span>Machine Learning</span>
+          <span>SQLite</span>
+          <span>HTML/CSS/JavaScript</span>
+        </div>
+      </article>
     </section>
   </main>
 
-  <footer>
-    Final Year Project • Drug Interaction Alert System Using Machine Learning
+  <footer class="footer">
+    <strong>Final Year Project</strong>
+    <span> • Drug Interaction Alert System Using Machine Learning</span>
   </footer>
-
-  <script src="/static/script.js"></script>
 </body>
 </html>
