@@ -1,0 +1,15 @@
+drug_a,drug_b,severity,mechanism,clinical_effect,recommendation
+Warfarin,Aspirin,Major,Additive anticoagulant and antiplatelet effect,Increased bleeding risk,Avoid combination unless specifically prescribed and closely monitored
+Warfarin,Ibuprofen,Major,NSAID-related bleeding risk with anticoagulation,Major gastrointestinal and internal bleeding risk,Avoid NSAIDs; consider paracetamol after clinician review
+Warfarin,Clarithromycin,Major,CYP-mediated increase in warfarin effect,Increased INR and bleeding risk,Use an alternative antibiotic or monitor INR closely
+Fluoxetine,Tramadol,Major,Additive serotonergic activity,Serotonin syndrome and seizure risk,Avoid or use only under specialist supervision
+Fluoxetine,Ondansetron,Moderate,QT prolongation and serotonergic risk,Abnormal heart rhythm or serotonin-related symptoms,Monitor clinical condition and ECG risk factors
+Amiodarone,Simvastatin,Major,CYP3A4 inhibition increases statin exposure,Myopathy and rhabdomyolysis risk,Use lower-risk statin such as pravastatin after clinician review
+Clarithromycin,Simvastatin,Major,CYP3A4 inhibition increases simvastatin concentration,Muscle toxicity and rhabdomyolysis risk,Avoid combination; consider alternative antibiotic or statin
+Lisinopril,Spironolactone,Major,Additive potassium retention,Hyperkalemia and kidney injury risk,Monitor potassium and renal function or consider alternative therapy
+Digoxin,Verapamil,Moderate,Reduced digoxin clearance,Digoxin toxicity risk,Monitor digoxin levels and clinical symptoms
+Ciprofloxacin,Ondansetron,Moderate,Additive QT prolongation,Torsades de pointes and arrhythmia risk,Avoid when possible; assess ECG risk
+Amiodarone,Azithromycin,Major,Additive QT prolongation,Serious cardiac rhythm abnormality risk,Avoid combination
+Phenytoin,Carbamazepine,Moderate,Enzyme induction alters antiepileptic concentrations,Reduced seizure control or toxicity,Monitor drug levels and clinical response
+Metformin,Lisinopril,Minor,Renal function may influence metformin exposure,Potential accumulation if renal function declines,Monitor renal function
+Aspirin,Ibuprofen,Moderate,NSAID interaction may reduce antiplatelet benefit and increase GI bleeding,Reduced cardioprotection and bleeding risk,Separate dosing and consult clinician

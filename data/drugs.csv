@@ -1,0 +1,21 @@
+drug_id,drug_name,drug_class,cyp3a4_inhibitor,cyp3a4_substrate,qt_prolonging,bleeding_risk,serotonergic,renal_risk,alternative
+1,Warfarin,Anticoagulant,0,1,0,1,0,0,Apixaban
+2,Aspirin,NSAID,0,0,0,1,0,1,Paracetamol
+3,Ibuprofen,NSAID,0,0,0,1,0,1,Paracetamol
+4,Paracetamol,Analgesic,0,0,0,0,0,0,Use according to indication
+5,Fluoxetine,SSRI Antidepressant,1,0,1,0,1,0,Sertraline
+6,Sertraline,SSRI Antidepressant,0,0,1,0,1,0,Escitalopram
+7,Tramadol,Opioid Analgesic,0,1,0,0,1,0,Paracetamol
+8,Amiodarone,Antiarrhythmic,1,1,1,0,0,0,Consult cardiologist
+9,Simvastatin,Statin,0,1,0,0,0,0,Pravastatin
+10,Clarithromycin,Macrolide Antibiotic,1,0,1,0,0,0,Azithromycin
+11,Metformin,Antidiabetic,0,0,0,0,0,1,Consult physician
+12,Lisinopril,ACE Inhibitor,0,0,0,0,0,1,Consult physician
+13,Spironolactone,Potassium Sparing Diuretic,0,0,0,0,0,1,Furosemide
+14,Ondansetron,Antiemetic,0,0,1,0,0,0,Consult physician
+15,Ciprofloxacin,Fluoroquinolone Antibiotic,1,0,1,0,0,1,Alternative antibiotic
+16,Phenytoin,Antiepileptic,0,1,0,0,0,0,Levetiracetam
+17,Carbamazepine,Antiepileptic,0,1,0,0,0,0,Levetiracetam
+18,Digoxin,Cardiac Glycoside,0,1,0,0,0,1,Consult cardiologist
+19,Verapamil,Calcium Channel Blocker,1,1,0,0,0,0,Amlodipine
+20,Azithromycin,Macrolide Antibiotic,0,0,1,0,0,0,Alternative antibiotic
