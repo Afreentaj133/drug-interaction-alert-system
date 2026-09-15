@@ -1,0 +1,276 @@
+{
+  "generated_at": "2026-09-15T16:29:41.623867",
+  "total_dataset_size": 138,
+  "train_samples": 110,
+  "test_samples": 28,
+  "features_used": [
+    "tanimoto_similarity",
+    "dice_similarity",
+    "mw_diff",
+    "mw_mean",
+    "logp_diff",
+    "logp_prod",
+    "tpsa_diff",
+    "tpsa_mean",
+    "h_donors_diff",
+    "h_acceptors_diff",
+    "rotatable_bonds_diff",
+    "heavy_atoms_diff",
+    "ring_count_diff",
+    "same_category",
+    "both_cyp_substrates",
+    "cyp_inhibitor_substrate_pair",
+    "both_qt_prolonging",
+    "both_bleeding_risk",
+    "both_serotonergic",
+    "both_renal_risk",
+    "any_cyp_inhibitor",
+    "any_qt_prolonging",
+    "any_bleeding_risk",
+    "any_serotonergic",
+    "any_renal_risk"
+  ],
+  "champion_model": "Random Forest (Ensemble)",
+  "models_benchmark": {
+    "Logistic Regression (Baseline)": {
+      "model_name": "Logistic Regression (Baseline)",
+      "accuracy": 0.8571,
+      "precision": 0.625,
+      "recall": 0.8333,
+      "f1_score": 0.7143,
+      "roc_auc": 0.803,
+      "pr_auc": 0.7121,
+      "confusion_matrix": [
+        [
+          19,
+          3
+        ],
+        [
+          1,
+          5
+        ]
+      ],
+      "classification_report": {
+        "0": {
+          "precision": 0.95,
+          "recall": 0.8636363636363636,
+          "f1-score": 0.9047619047619048,
+          "support": 22.0
+        },
+        "1": {
+          "precision": 0.625,
+          "recall": 0.8333333333333334,
+          "f1-score": 0.7142857142857143,
+          "support": 6.0
+        },
+        "accuracy": 0.8571428571428571,
+        "macro avg": {
+          "precision": 0.7875,
+          "recall": 0.8484848484848485,
+          "f1-score": 0.8095238095238095,
+          "support": 28.0
+        },
+        "weighted avg": {
+          "precision": 0.8803571428571428,
+          "recall": 0.8571428571428571,
+          "f1-score": 0.8639455782312925,
+          "support": 28.0
+        }
+      }
+    },
+    "Random Forest (Ensemble)": {
+      "model_name": "Random Forest (Ensemble)",
+      "accuracy": 0.8214,
+      "precision": 1.0,
+      "recall": 0.1667,
+      "f1_score": 0.2857,
+      "roc_auc": 0.8485,
+      "pr_auc": 0.8718,
+      "confusion_matrix": [
+        [
+          22,
+          0
+        ],
+        [
+          5,
+          1
+        ]
+      ],
+      "classification_report": {
+        "0": {
+          "precision": 0.8148148148148148,
+          "recall": 1.0,
+          "f1-score": 0.8979591836734694,
+          "support": 22.0
+        },
+        "1": {
+          "precision": 1.0,
+          "recall": 0.16666666666666666,
+          "f1-score": 0.2857142857142857,
+          "support": 6.0
+        },
+        "accuracy": 0.8214285714285714,
+        "macro avg": {
+          "precision": 0.9074074074074074,
+          "recall": 0.5833333333333334,
+          "f1-score": 0.5918367346938775,
+          "support": 28.0
+        },
+        "weighted avg": {
+          "precision": 0.8544973544973544,
+          "recall": 0.8214285714285714,
+          "f1-score": 0.7667638483965015,
+          "support": 28.0
+        }
+      }
+    },
+    "XGBoost (Advanced Gradient Boosting)": {
+      "model_name": "XGBoost (Advanced Gradient Boosting)",
+      "accuracy": 0.8929,
+      "precision": 0.8,
+      "recall": 0.6667,
+      "f1_score": 0.7273,
+      "roc_auc": 0.8182,
+      "pr_auc": 0.7977,
+      "confusion_matrix": [
+        [
+          21,
+          1
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "classification_report": {
+        "0": {
+          "precision": 0.9130434782608695,
+          "recall": 0.9545454545454546,
+          "f1-score": 0.9333333333333333,
+          "support": 22.0
+        },
+        "1": {
+          "precision": 0.8,
+          "recall": 0.6666666666666666,
+          "f1-score": 0.7272727272727273,
+          "support": 6.0
+        },
+        "accuracy": 0.8928571428571429,
+        "macro avg": {
+          "precision": 0.8565217391304347,
+          "recall": 0.8106060606060606,
+          "f1-score": 0.8303030303030303,
+          "support": 28.0
+        },
+        "weighted avg": {
+          "precision": 0.8888198757763975,
+          "recall": 0.8928571428571429,
+          "f1-score": 0.8891774891774892,
+          "support": 28.0
+        }
+      }
+    }
+  },
+  "feature_importances_ranked": [
+    [
+      "cyp_inhibitor_substrate_pair",
+      0.1979
+    ],
+    [
+      "any_cyp_inhibitor",
+      0.0868
+    ],
+    [
+      "mw_mean",
+      0.0685
+    ],
+    [
+      "logp_prod",
+      0.0609
+    ],
+    [
+      "both_bleeding_risk",
+      0.0566
+    ],
+    [
+      "logp_diff",
+      0.0502
+    ],
+    [
+      "tpsa_diff",
+      0.0502
+    ],
+    [
+      "mw_diff",
+      0.0497
+    ],
+    [
+      "tpsa_mean",
+      0.048
+    ],
+    [
+      "dice_similarity",
+      0.0472
+    ],
+    [
+      "both_cyp_substrates",
+      0.047
+    ],
+    [
+      "tanimoto_similarity",
+      0.0423
+    ],
+    [
+      "ring_count_diff",
+      0.0414
+    ],
+    [
+      "rotatable_bonds_diff",
+      0.0335
+    ],
+    [
+      "h_acceptors_diff",
+      0.0309
+    ],
+    [
+      "heavy_atoms_diff",
+      0.0269
+    ],
+    [
+      "h_donors_diff",
+      0.0191
+    ],
+    [
+      "both_renal_risk",
+      0.0146
+    ],
+    [
+      "any_qt_prolonging",
+      0.0094
+    ],
+    [
+      "any_bleeding_risk",
+      0.0069
+    ],
+    [
+      "any_renal_risk",
+      0.0048
+    ],
+    [
+      "both_qt_prolonging",
+      0.0042
+    ],
+    [
+      "any_serotonergic",
+      0.0023
+    ],
+    [
+      "both_serotonergic",
+      0.0007
+    ],
+    [
+      "same_category",
+      0.0
+    ]
+  ]
+}
