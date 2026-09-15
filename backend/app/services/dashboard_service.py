@@ -50,6 +50,14 @@ class DashboardService:
             for d, c in sorted(date_counts.items())
         ]
 
+        from backend.app.models.patient import Patient
+        from backend.app.models.patient_medication import PatientMedication
+        from backend.app.models.medical_document import MedicalDocument
+
+        total_patients = db.query(Patient).count()
+        total_medications = db.query(PatientMedication).count()
+        total_documents = db.query(MedicalDocument).count()
+
         return DashboardStats(
             total_checks=total_checks,
             interactions_detected=interactions_detected,
@@ -58,7 +66,10 @@ class DashboardService:
             minor_alerts=minor_count,
             severity_distribution=severity_distribution,
             top_flagged_drugs=top_flagged,
-            recent_activity=recent_activity
+            recent_activity=recent_activity,
+            total_patients=total_patients,
+            total_medications_screened=total_medications,
+            total_documents_processed=total_documents
         )
 
 dashboard_service = DashboardService()

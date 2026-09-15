@@ -150,8 +150,24 @@ In high-risk pairs such as **Warfarin + Aspirin**, SHAP explicitly isolates:
 
 ---
 
-## 7. Limitations & Future Work
+## 7. Clinical History Intake & Document-Based Medication Extraction Integration (SIH PS 26047)
 
-1. **Graph Neural Networks (GNN / GAT)**: Direct graph convolutions on molecular graphs ($G = (V, E)$) using PyTorch Geometric can be integrated as future extensions to learn latent atom-bond representations beyond fixed bitvectors.
-2. **Polypharmacy Multi-Drug Interaction Graph**: Extending pairwise $(d_A, d_B)$ prediction to multi-order drug regimes ($k \ge 3$) using hypergraph neural representations.
+### Research Contribution
+The proposed system integrates medication history and document-based medication extraction with an explainable drug-drug interaction prediction pipeline, enabling patient-specific medication screening from both structured and semi-structured inputs.
+
+### Methodological Architecture
+1. **Semi-Structured Document Intake**: Ingestion of outpatient prescriptions and discharge summaries across standard formats (PDF, JPG, PNG). Native digital text extraction is performed via `pypdf`, while scanned documents are processed via ONNX-optimized optical character recognition (`rapidocr-onnxruntime`).
+2. **Entity Recognition & Fuzzy Normalization**: Extracted clinical phrases are parsed for strength/dosage patterns (`\d+\s*mg`), administration frequencies (`OD`, `BD`, `TDS`), and candidate active ingredients. Candidates are matched against the 73-compound reference formulary using Levenshtein distance:
+   $$\text{sim}(s_1, s_2) = 1 - \frac{\text{lev}(s_1, s_2)}{\max(|s_1|, |s_2|)}$$
+   Exact matches achieve $\text{sim} = 1.0$ (`Matched`), partial matches with $\text{sim} \ge 0.78$ are flagged as `Corrected`, and lower-confidence matches are triaged for mandatory clinician review (`Review Required`).
+3. **Combinatorial Polypharmacy Screening**: For a patient presenting with an active medication list $\mathcal{M} = \{d_1, d_2, \dots, d_K\}$, the system evaluates all $\binom{K}{2} = \frac{K(K-1)}{2}$ unique pairwise combinations using the underlying Random Forest model and RDKit feature vector $\Phi(d_i, d_j)$, aggregating cumulative risk signals (e.g., additive bleeding risk, CYP competition, QT interval prolongation).
+4. **Clinical Decision Support Summary**: Synthesis of patient clinical history (chronic conditions, documented drug allergies, surgical interventions), document findings, and interaction risk stratifications into a structured, printable report with strict non-autonomous clinician review governance.
+
+---
+
+## 8. Limitations & Future Work
+
+1. **Graph Neural Networks (GNN / GAT)**: Direct graph convolutions on 3D molecular graphs ($G = (V, E)$) using PyTorch Geometric can be integrated as future extensions to learn latent atom-bond representations beyond fixed bitvectors.
+2. **Deep Polypharmacy Hypergraph Modeling**: Transitioning from $\binom{K}{2}$ pair decomposition to higher-order hypergraph neural architectures (e.g., Decagon framework) to capture simultaneous 5-to-10 drug adverse synergisms.
 3. **Electronic Health Record (EHR) Integration**: Establishing standardized HL7 FHIR R4 API endpoints for seamless bedside deployment into hospital clinical workflows.
+

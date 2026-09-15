@@ -69,6 +69,57 @@ def init_db(db: Session = None):
             db.commit()
             logger.info("Seeded clinical drug-drug interaction reference records.")
 
+        # Seed synthetic demonstration patients if empty
+        from backend.app.models.patient import Patient
+        from backend.app.models.patient_medication import PatientMedication
+        patient_count = db.query(Patient).count()
+        if patient_count == 0:
+            logger.info("Seeding synthetic demonstration patient profiles...")
+            p1 = Patient(
+                patient_id="DEMO-PT-1001",
+                name="Demo Patient (Cardiovascular & Endocrine)",
+                age=68,
+                sex="Male",
+                conditions="Atrial Fibrillation, Hypertension, Type 2 Diabetes Mellitus",
+                allergies="Penicillin V, Amoxicillin (Severe Rash)",
+                medical_history="Diagnosed with T2DM in 2014; AFib diagnosed in 2020. Mild chronic renal impairment (eGFR 55 mL/min).",
+                surgeries="Coronary stent placement (LAD, 2021)"
+            )
+            db.add(p1)
+            db.flush()
+
+            meds_p1 = [
+                PatientMedication(patient_id=p1.id, drug_name="Warfarin", dose="5 mg", frequency="Once daily in evening", route="Oral", status="Current", source="Manual", notes="Target INR 2.0 - 3.0"),
+                PatientMedication(patient_id=p1.id, drug_name="Metformin", dose="500 mg", frequency="Twice daily with meals", route="Oral", status="Current", source="Manual", notes="Glycemic control"),
+                PatientMedication(patient_id=p1.id, drug_name="Amlodipine", dose="5 mg", frequency="Once daily in morning", route="Oral", status="Current", source="Manual", notes="Blood pressure control"),
+                PatientMedication(patient_id=p1.id, drug_name="Aspirin", dose="75 mg", frequency="Once daily", route="Oral", status="Previous", source="Manual", notes="Discontinued due to mild hematoma")
+            ]
+            for m in meds_p1:
+                db.add(m)
+
+            p2 = Patient(
+                patient_id="DEMO-PT-1002",
+                name="Demo Patient (Psychiatry & Gastroenterology)",
+                age=42,
+                sex="Female",
+                conditions="Major Depressive Disorder, Gastroesophageal Reflux Disease (GERD)",
+                allergies="Sulfa antibiotics (Urticaria)",
+                medical_history="Recurrent depressive episodes; persistent acid reflux managed with PPI therapy.",
+                surgeries="Laparoscopic cholecystectomy (2018)"
+            )
+            db.add(p2)
+            db.flush()
+
+            meds_p2 = [
+                PatientMedication(patient_id=p2.id, drug_name="Fluoxetine", dose="20 mg", frequency="Once daily in morning", route="Oral", status="Current", source="Manual", notes="SSRI for depression"),
+                PatientMedication(patient_id=p2.id, drug_name="Omeprazole", dose="20 mg", frequency="Once daily before breakfast", route="Oral", status="Current", source="Manual", notes="PPI for acid reflux")
+            ]
+            for m in meds_p2:
+                db.add(m)
+
+            db.commit()
+            logger.info("Seeded 2 synthetic demonstration patient profiles.")
+
     except Exception as e:
         db.rollback()
         logger.error(f"Failed to initialize and seed database: {e}")

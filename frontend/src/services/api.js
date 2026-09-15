@@ -66,4 +66,86 @@ export const api = {
 
   // Model Metadata
   getModelInfo: () => fetchJSON('/api/model/info'),
+
+  // Patients & Medication History (SIH PS 26047)
+  getPatients: (search = '', skip = 0, limit = 50) => {
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    params.append('skip', skip.toString());
+    params.append('limit', limit.toString());
+    return fetchJSON(`/api/patients?${params.toString()}`);
+  },
+  getDemoPatients: () => fetchJSON('/api/patients/demo/list'),
+  getPatientById: (patientId) => fetchJSON(`/api/patients/${patientId}`),
+  createPatient: (patientData) =>
+    fetchJSON('/api/patients', {
+      method: 'POST',
+      body: JSON.stringify(patientData),
+    }),
+  updatePatient: (patientId, updateData) =>
+    fetchJSON(`/api/patients/${patientId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+    }),
+  deletePatient: (patientId) =>
+    fetchJSON(`/api/patients/${patientId}`, { method: 'DELETE' }),
+  addPatientMedication: (patientId, medData) =>
+    fetchJSON(`/api/patients/${patientId}/medications`, {
+      method: 'POST',
+      body: JSON.stringify(medData),
+    }),
+  removePatientMedication: (patientId, medId) =>
+    fetchJSON(`/api/patients/${patientId}/medications/${medId}`, { method: 'DELETE' }),
+  screenPatientMedications: (patientId) =>
+    fetchJSON(`/api/patients/${patientId}/screen-medications`, { method: 'POST' }),
+  getPatientSafetySummary: (patientId) =>
+    fetchJSON(`/api/patients/${patientId}/safety-summary`),
+
+  // Medical Documents & OCR Intake (SIH PS 26047)
+  uploadDocument: async (file, patientId = '') => {
+    const url = `${API_BASE}/api/documents/upload`;
+    const formData = new FormData();
+    formData.append('file', file);
+    if (patientId) formData.append('patient_id', patientId);
+
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      let errorDetail = `Upload failed with status ${response.status}`;
+      try {
+        const errJson = await response.json();
+        if (errJson.detail) errorDetail = errJson.detail;
+      } catch {}
+      throw new Error(errorDetail);
+    }
+    return await response.json();
+  },
+  loadDemoSamplePrescription: async (patientId = 'DEMO-PT-1001') => {
+    const url = `${API_BASE}/api/documents/demo-sample`;
+    const formData = new FormData();
+    formData.append('patient_id', patientId);
+
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) {
+      let errorDetail = `Demo sample load failed`;
+      try {
+        const errJson = await response.json();
+        if (errJson.detail) errorDetail = errJson.detail;
+      } catch {}
+      throw new Error(errorDetail);
+    }
+    return await response.json();
+  },
+  getDocumentById: (docId) => fetchJSON(`/api/documents/${docId}`),
+  getPatientDocuments: (patientId) => fetchJSON(`/api/documents/patient/${patientId}`),
+  confirmMedications: (docId, patientId, medications) =>
+    fetchJSON(`/api/documents/${docId}/confirm-medications`, {
+      method: 'POST',
+      body: JSON.stringify({ patient_id: patientId, medications }),
+    }),
 };

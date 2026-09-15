@@ -7,7 +7,9 @@ import {
   CheckCircle2, 
   RefreshCw,
   Clock,
-  Pill
+  Pill,
+  Users,
+  FileText
 } from 'lucide-react';
 import { 
   PieChart, 
@@ -146,6 +148,54 @@ export default function DashboardPage() {
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
             Monitoring and dosage adjustment
+          </div>
+        </div>
+
+        {/* Patients Registered */}
+        <div className="glass-panel" style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>
+              Patients Enrolled
+            </span>
+            <Users size={18} color="#38bdf8" />
+          </div>
+          <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>
+            {stats?.total_patients || 0}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            Clinical history profiles
+          </div>
+        </div>
+
+        {/* Active Meds Screened */}
+        <div className="glass-panel" style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>
+              Medications Screened
+            </span>
+            <Pill size={18} color="#4ade80" />
+          </div>
+          <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#4ade80', fontFamily: 'var(--font-mono)' }}>
+            {stats?.total_medications_screened || 0}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            Prescriptions in active regimens
+          </div>
+        </div>
+
+        {/* Documents Ingested */}
+        <div className="glass-panel" style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>
+              Documents Processed
+            </span>
+            <FileText size={18} color="#c084fc" />
+          </div>
+          <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#c084fc', fontFamily: 'var(--font-mono)' }}>
+            {stats?.total_documents_processed || 0}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            Prescriptions parsed via OCR
           </div>
         </div>
 

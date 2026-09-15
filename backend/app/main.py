@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from backend.app.utils.config import settings
 from backend.app.utils.logger import logger
 from backend.app.database.init_db import init_db
-from backend.app.api.endpoints import health, drugs, interactions, alerts, dashboard, model_info
+from backend.app.api.endpoints import health, drugs, interactions, alerts, dashboard, model_info, patients, documents
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
@@ -48,6 +48,8 @@ app.include_router(interactions.router)
 app.include_router(alerts.router)
 app.include_router(dashboard.router)
 app.include_router(model_info.router)
+app.include_router(patients.router)
+app.include_router(documents.router)
 
 # Mount Static Assets / Frontend Single Page Application
 if FRONTEND_DIST.exists() and (FRONTEND_DIST / "index.html").exists():

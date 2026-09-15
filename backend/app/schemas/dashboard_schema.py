@@ -18,3 +18,6 @@ class DashboardStats(BaseModel):
     severity_distribution: Dict[str, int]
     top_flagged_drugs: List[DrugFrequency]
     recent_activity: List[ActivityPoint]
+    total_patients: int = 0
+    total_medications_screened: int = 0
+    total_documents_processed: int = 0

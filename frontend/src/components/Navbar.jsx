@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck, Activity, Pill, History, BarChart2, Info, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, Activity, Pill, History, BarChart2, Info, AlertTriangle, Users, FileText, FileCheck2 } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function Navbar({ activePage, setActivePage }) {
@@ -12,12 +12,15 @@ export default function Navbar({ activePage, setActivePage }) {
   }, []);
 
   const navItems = [
-    { id: 'checker', label: 'Interaction Checker', icon: Pill },
-    { id: 'dashboard', label: 'Analytics Dashboard', icon: BarChart2 },
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart2 },
+    { id: 'checker', label: 'Pair Checker', icon: Pill },
+    { id: 'patients', label: 'Patient History', icon: Users },
+    { id: 'prescriptions', label: 'Prescription OCR', icon: FileText },
+    { id: 'safety-report', label: 'Safety Report', icon: FileCheck2 },
     { id: 'history', label: 'Alert History', icon: History },
     { id: 'drugs', label: 'Drug Catalog', icon: Activity },
-    { id: 'about', label: 'About & Architecture', icon: Info },
-    { id: 'disclaimer', label: 'Clinical Safety', icon: AlertTriangle },
+    { id: 'about', label: 'About', icon: Info },
+    { id: 'disclaimer', label: 'Safety', icon: AlertTriangle },
   ];
 
   return (

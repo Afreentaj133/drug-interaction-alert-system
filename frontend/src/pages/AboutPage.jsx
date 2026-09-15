@@ -81,9 +81,15 @@ export default function AboutPage() {
             overflowX: 'auto',
             marginBottom: '20px'
           }}>
-            User Input (Drug A + Drug B)<br />
+            Patient Clinical Context (Conditions, Allergies, History) OR Prescription Document (JPG, PNG, PDF)<br />
             &nbsp;&nbsp;↓<br />
-            Pydantic Schema Validation &amp; SQLite/PostgreSQL Entity Lookup<br />
+            Document Intake &amp; Optical Character Recognition (RapidOCR ONNX + pypdf)<br />
+            &nbsp;&nbsp;↓<br />
+            Pharmaceutical Entity Extraction &amp; Fuzzy Normalization against Curated Formulary<br />
+            &nbsp;&nbsp;↓<br />
+            Clinician Verification &amp; Transfer to Patient Active Medication Regimen<br />
+            &nbsp;&nbsp;↓<br />
+            Polypharmacy Combinatorial Pair Generation (N-Choose-2 Unique Evaluated Pairs)<br />
             &nbsp;&nbsp;↓<br />
             RDKit Chemical Processing (Canonical SMILES → 1024-bit Morgan ECFP4 Fingerprints + Lipinski Descriptors)<br />
             &nbsp;&nbsp;↓<br />
@@ -95,7 +101,7 @@ export default function AboutPage() {
             &nbsp;&nbsp;↓<br />
             SHAP TreeExplainer Local Attribution (Quantifies Positive/Negative Feature Risk Drivers)<br />
             &nbsp;&nbsp;↓<br />
-            Decision-Support Alert Dispatch (FastAPI REST API → React Dashboard)
+            Cumulative Hazard Signals &amp; AI-Assisted Clinical Medication Safety Summary Report
           </div>
         </section>
 

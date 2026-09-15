@@ -56,6 +56,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Patient Documents & Uploads Privacy Safeguards
+uploads/
+*.pdf
+*.jpg
+*.jpeg
+*.png
+!frontend/public/*.png
+!frontend/src/assets/*.png
+
 # IDE & OS
 .vscode/
 .idea/

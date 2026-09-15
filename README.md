@@ -7,9 +7,10 @@
 [![Scikit-Learn](https://img.shields.io/badge/ML-Scikit--Learn-F7931E.svg?logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
 [![SHAP](https://img.shields.io/badge/Explainability-SHAP-ff69b4.svg)](https://shap.readthedocs.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-8%20Passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-12%20Passed-brightgreen.svg)]()
+[![SIH](https://img.shields.io/badge/SIH%20PS%2026047-Enhanced-indigo.svg)]()
 
-> **Machine Learning-Based Clinical Decision Support for Drug-Drug Interaction Review**  
+> **Machine Learning-Based Clinical Decision Support for Drug-Drug Interaction Review & Clinical Intake**  
 > *A full-stack, production-grade Clinical Decision Support System (CDSS) prototype engineered to assist physicians and pharmacists in identifying potential adverse drug interactions, triaging severity, and understanding predictive factors through Explainable AI.*
 
 ---
@@ -22,38 +23,65 @@
 
 ---
 
-## System Architecture
+## Enhanced End-to-End System Architecture (SIH PS 26047)
 
 ```
-                                  [ CLINICIAN / USER ]
-                                           │
-                                           ▼
-               ┌────────────────────────────────────────────────────────┐
-               │              React.js Frontend Dashboard               │
-               │   (Vite + Plus Jakarta Sans + Lucide Icons + Recharts) │
-               └───────────────────────────┬────────────────────────────┘
-                                           │  REST API (JSON)
-                                           ▼
-               ┌────────────────────────────────────────────────────────┐
-               │                 FastAPI REST Backend                   │
-               │          (Lifespan Cache, CORS, Pydantic v2)           │
-               └─────────────┬────────────────────────────┬─────────────┘
-                             │                            │
-                             ▼                            ▼
-              ┌───────────────────────────┐  ┌───────────────────────────┐
-              │     RDKit Cheminformatics │  │     Database Storage      │
-              │  • Canonical SMILES       │  │  • SQLite (Local Fallback)│
-              │  • 1024-bit Morgan ECFP4  │  │  • PostgreSQL (Production)│
-              │  • Tanimoto & Descriptors │  │  • Alerts Audit Trail     │
-              └──────────────┬────────────┘  └───────────────────────────┘
-                             │
-                             ▼
-              ┌──────────────────────────────────────────────────────────┐
-              │ Machine Learning & Explainable AI (XAI)                  │
-              │  • Random Forest Ensemble (Champion Model: ROC-AUC 0.85) │
-              │  • Benchmark Comparisons: Logistic Regression & XGBoost  │
-              │  • SHAP TreeExplainer Local Attribution Quantification   │
-              └──────────────────────────────────────────────────────────┘
+                            Patient Clinical Context
+                 (Conditions, Allergies, Surgical History)
+                                    │
+                                    ├─── OR ───┐
+                                    │          ▼
+                                    │    Prescription Document
+                                    │    (JPG, PNG, PDF Upload)
+                                    │          │
+                                    │          ▼
+                                    │    Document Intake & OCR
+                                    │   (RapidOCR ONNX + pypdf)
+                                    │          │
+                                    │          ▼
+                                    │    Pharmaceutical Entity Extraction
+                                    │    (Dosage, Frequency, Candidate Drugs)
+                                    │          │
+                                    │          ▼
+                                    │    Drug Name Normalization & Match
+                                    │    (Curated 73-Compound Formulary)
+                                    │          │
+                                    │          ▼
+                                    │    Clinician Verification Screen
+                                    │    (Confirm, Edit, or Add Medicines)
+                                    ▼          │
+                        Active Medication Regimen
+                                    │
+                                    ▼
+                        Polypharmacy Combinatorial Pairs
+                               (N-Choose-2 Pairs)
+                                    │
+                                    ▼
+                        RDKit Chemical Processing
+              (Canonical SMILES → 1024-bit Morgan ECFP4 + Lipinski)
+                                    │
+                                    ▼
+                        Symmetric Feature Assembly
+           (Tanimoto Similarity + |ΔMolWt| + |ΔLogP| + |ΔTPSA| + CYP/QT)
+                                    │
+                                    ▼
+                        Machine Learning Prediction
+                 (Champion Random Forest: ROC-AUC 0.8485)
+                                    │
+                                    ▼
+                        Severity & Risk Triaging
+                 (Major: ≥0.70 | Moderate: 0.40–0.70 | Minor)
+                                    │
+                                    ▼
+                        SHAP TreeExplainer Local XAI
+               (Directional Positive & Negative Shapley Drivers)
+                                    │
+                                    ▼
+                 AI-Assisted Clinical Medication Safety Summary
+                 (Hazard Signals, Action Items, Printable Report)
+                                    │
+                                    ▼
+                        Licensed Clinician Review
 ```
 
 ---
