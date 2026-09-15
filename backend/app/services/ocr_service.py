@@ -119,32 +119,71 @@ class OcrService:
                 detail=f"OCR processing failed for this image: {e}"
             )
 
+    MEDICAL_KEYWORDS = {
+        "rx", "tab", "tablet", "cap", "capsule", "inj", "injection", "syp", "syrup",
+        "mg", "mcg", "g", "ml", "iu", "units", "od", "bd", "tds", "qid", "hs",
+        "daily", "twice", "thrice", "dosage", "dose", "oral", "intravenous", "im", "iv",
+        "dr", "doctor", "physician", "clinic", "clinical", "hospital", "patient",
+        "prescription", "prescribed", "diagnosis", "history", "treatment", "medicine",
+        "medication", "lab", "laboratory", "report", "discharge", "summary", "blood",
+        "inr", "bp", "pulse", "pharmacy", "pharmacist", "formulation", "pathology", "drops"
+    }
+
+    NON_DRUG_TOKENS = {
+        "ultimate", "python", "guide", "certificate", "certification", "completion",
+        "course", "university", "college", "department", "degree", "diploma",
+        "developer", "engineer", "engineering", "science", "information", "computer",
+        "technology", "training", "institute", "school", "academy", "license",
+        "programming", "software", "development", "data", "learning", "tutorial",
+        "student", "participant", "instructor", "awarded", "achievement", "grade",
+        "signature", "director", "coordinator", "president", "founder", "manager",
+        "the", "and", "for", "with", "this", "that", "from", "have", "been", "successfully",
+        "google", "microsoft", "amazon", "apple", "online", "verify", "issued", "credential"
+    }
+
     @staticmethod
-    def match_drug_candidate(token: str, catalog_drugs: List[str]) -> Tuple[Optional[str], str, float]:
+    def is_probable_medical_document(text: str, catalog_drugs: List[str]) -> bool:
+        """Verify whether the text contains clinical indicators or exact catalog drug names."""
+        lower_text = text.lower()
+        words = set(re.findall(r'\b[a-z]{2,}\b', lower_text))
+        
+        # Check if any catalog drug is explicitly present
+        for drug in catalog_drugs:
+            if re.search(rf'\b{re.escape(drug.lower())}\b', lower_text):
+                return True
+                
+        # Count medical keywords
+        matching_keywords = words.intersection(OcrService.MEDICAL_KEYWORDS)
+        return len(matching_keywords) >= 2
+
+    @staticmethod
+    def match_drug_candidate(token: str, catalog_drugs: List[str], has_dosage_or_prefix: bool = False) -> Tuple[Optional[str], str, float]:
         """
-        Fuzzy match candidate token against catalog drugs.
+        Fuzzy match candidate token against catalog drugs with strict clinical thresholds.
         Returns: (matched_drug_name, status, confidence)
-        Status can be: 'Matched', 'Corrected', 'Review Required', 'Uncataloged'
         """
-        clean_token = re.sub(r'[^a-zA-Z]', '', token).strip()
-        if len(clean_token) < 3:
+        clean_token = re.sub(r'[^a-zA-Z]', '', token).strip().lower()
+        if len(clean_token) < 3 or clean_token in OcrService.NON_DRUG_TOKENS:
             return None, "Uncataloged", 0.0
 
         best_match = None
         best_ratio = 0.0
 
         for drug_name in catalog_drugs:
-            if clean_token.lower() == drug_name.lower():
+            drug_lower = drug_name.lower()
+            if clean_token == drug_lower:
                 return drug_name, "Matched", 1.0
 
-            ratio = SequenceMatcher(None, clean_token.lower(), drug_name.lower()).ratio()
+            ratio = SequenceMatcher(None, clean_token, drug_lower).ratio()
             if ratio > best_ratio:
                 best_ratio = ratio
                 best_match = drug_name
 
-        if best_ratio >= 0.78:
+        # For fuzzy correction, require high similarity (>=0.82)
+        # and require that the line has a dosage pattern or pharmaceutical prefix
+        if best_ratio >= 0.82:
             return best_match, "Corrected", round(best_ratio, 2)
-        elif best_ratio >= 0.60:
+        elif best_ratio >= 0.78 and has_dosage_or_prefix:
             return best_match, "Review Required", round(best_ratio, 2)
         else:
             return None, "Uncataloged", round(best_ratio, 2)
@@ -153,7 +192,12 @@ class OcrService:
     def parse_medications_from_text(raw_text: str, catalog_drugs: List[str]) -> List[Dict[str, Any]]:
         """
         Extract medication lines, dosage strengths, and map candidate names to catalog drugs.
+        Only parses if the document shows clinical/medical characteristics.
         """
+        if not OcrService.is_probable_medical_document(raw_text, catalog_drugs):
+            logger.info("Document failed medical validation check (no clinical keywords or drug names).")
+            return []
+
         lines = [line.strip() for line in raw_text.splitlines() if line.strip()]
         extracted_results = []
         seen_drugs = set()
@@ -162,19 +206,21 @@ class OcrService:
         prefix_regex = re.compile(r'^(?:tab|tablet|cap|capsule|syp|syrup|inj|injection)\.?\s*', re.IGNORECASE)
 
         for line in lines:
-            # Check dosage in line
             dose_match = dosage_regex.search(line)
+            has_prefix = bool(prefix_regex.search(line))
             dosage = dose_match.group(1).strip() if dose_match else None
+            has_dosage_or_prefix = (dosage is not None) or has_prefix
 
-            # Tokenize line without dosage
             cleaned_line = prefix_regex.sub('', line)
             tokens = re.split(r'[\s,;:/\-]+', cleaned_line)
 
             for token in tokens:
-                if len(token) < 3 or token.lower() in {"once", "twice", "daily", "oral", "after", "before", "food", "night", "morning", "dose", "tablet", "capsule", "days"}:
+                if len(token) < 3:
                     continue
 
-                matched_name, status, conf = OcrService.match_drug_candidate(token, catalog_drugs)
+                matched_name, status, conf = OcrService.match_drug_candidate(
+                    token, catalog_drugs, has_dosage_or_prefix=has_dosage_or_prefix
+                )
 
                 if status in ["Matched", "Corrected", "Review Required"] and matched_name:
                     if matched_name.lower() in seen_drugs:
@@ -184,13 +230,11 @@ class OcrService:
                     extracted_results.append({
                         "extracted_text": line,
                         "matched_drug_name": matched_name,
-                        "dosage": dosage,
+                        "dosage": dosage or "Standard dose",
                         "match_status": status,
                         "confidence": conf,
-                        "is_confirmed": 0 # Explicit clinician confirmation required
+                        "is_confirmed": 0
                     })
-                    break
-
         return extracted_results
 
     @staticmethod

@@ -25,83 +25,62 @@ export default function AboutPage() {
           </p>
         </div>
 
-        {/* Academic Project Banner */}
-        <div className="glass-panel" style={{ padding: '28px', marginBottom: '32px', borderLeft: '4px solid var(--primary)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-            <Award size={20} color="var(--primary)" />
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff' }}>
-              Final-Year Engineering Project
-            </h3>
-          </div>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '14px' }}>
-            Developed at the <strong>Department of Information Science and Engineering, City Engineering College, Bangalore</strong>.
-          </p>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '14px',
-            background: 'rgba(255, 255, 255, 0.02)',
-            padding: '16px',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.84rem'
-          }}>
-            <div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700 }}>PROJECT GUIDE / MENTOR</div>
-              <div style={{ color: '#fff', fontWeight: 700, marginTop: '2px' }}>Mrs. SWATHI S B</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>Assistant Professor, Dept. of ISE</div>
-            </div>
-            <div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700 }}>STUDENT INVESTIGATORS</div>
-              <div style={{ color: '#fff', fontWeight: 600, marginTop: '2px' }}>AFREEN TAJ (1CE23IS006)</div>
-              <div style={{ color: '#fff', fontWeight: 600 }}>BHAVANA N (1CE23IS018)</div>
-              <div style={{ color: '#fff', fontWeight: 600 }}>BHOOMIKA MH (1CE23IS021)</div>
-            </div>
-          </div>
-        </div>
-
         {/* Architectural Overview */}
-        <section className="glass-panel" style={{ padding: '32px', marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Layers size={20} color="var(--primary)" />
-            System Architecture &amp; Data Pipeline
+        <section className="glass-panel" style={{ padding: '32px', marginBottom: '32px', border: '1px solid rgba(0, 210, 255, 0.3)' }}>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fff', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Layers size={22} color="var(--primary)" />
+            Clinical Decision-Support Architecture
           </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '20px' }}>
-            The DIAS architecture is engineered in decoupled tiers to ensure rigorous scientific validation, low-latency inference, and transparent clinical interpretability:
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '24px' }}>
+            The DIAS architecture is engineered in decoupled clinical tiers to ensure rigorous scientific validation, low-latency ML inference, and transparent physician interpretability:
           </p>
 
           <div style={{
-            background: 'rgba(15, 23, 42, 0.9)',
-            padding: '24px',
+            background: 'rgba(5, 12, 28, 0.95)',
+            padding: '28px',
             borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border-subtle)',
+            border: '1px solid rgba(0, 210, 255, 0.35)',
+            boxShadow: '0 0 25px rgba(0, 210, 255, 0.12)',
             fontFamily: 'var(--font-mono)',
-            fontSize: '0.8rem',
-            color: '#38bdf8',
-            lineHeight: 1.7,
+            fontSize: '0.88rem',
+            color: '#00f0ff',
+            lineHeight: 1.45,
             overflowX: 'auto',
-            marginBottom: '20px'
+            whiteSpace: 'pre',
+            textAlign: 'center',
+            marginBottom: '10px'
           }}>
-            Patient Clinical Context (Conditions, Allergies, History) OR Prescription Document (JPG, PNG, PDF)<br />
-            &nbsp;&nbsp;↓<br />
-            Document Intake &amp; Optical Character Recognition (RapidOCR ONNX + pypdf)<br />
-            &nbsp;&nbsp;↓<br />
-            Pharmaceutical Entity Extraction &amp; Fuzzy Normalization against Curated Formulary<br />
-            &nbsp;&nbsp;↓<br />
-            Clinician Verification &amp; Transfer to Patient Active Medication Regimen<br />
-            &nbsp;&nbsp;↓<br />
-            Polypharmacy Combinatorial Pair Generation (N-Choose-2 Unique Evaluated Pairs)<br />
-            &nbsp;&nbsp;↓<br />
-            RDKit Chemical Processing (Canonical SMILES → 1024-bit Morgan ECFP4 Fingerprints + Lipinski Descriptors)<br />
-            &nbsp;&nbsp;↓<br />
-            Symmetric Pair Feature Assembly (Tanimoto Similarity + |ΔMolWt| + |ΔLogP| + |ΔTPSA| + CYP/QT Overlap)<br />
-            &nbsp;&nbsp;↓<br />
-            Machine Learning Inference ({modelInfo?.active_champion_model || 'Random Forest Ensemble'})<br />
-            &nbsp;&nbsp;↓<br />
-            Severity Classification (Major: ≥0.70 | Moderate: 0.40–0.70 | Minor: &lt;0.40)<br />
-            &nbsp;&nbsp;↓<br />
-            SHAP TreeExplainer Local Attribution (Quantifies Positive/Negative Feature Risk Drivers)<br />
-            &nbsp;&nbsp;↓<br />
-            Cumulative Hazard Signals &amp; AI-Assisted Clinical Medication Safety Summary Report
+{`               PATIENT
+                 ↓
+       ┌───────────────────┐
+       │ Patient History   │
+       │ + Medication List │
+       └─────────┬─────────┘
+                 ↓
+       ┌───────────────────┐
+       │ Prescription /    │
+       │ Medical Document  │
+       └─────────┬─────────┘
+                 ↓
+              OCR / NLP
+                 ↓
+       Extract medication names
+                 ↓
+       ┌─────────────────────┐
+       │ Drug Interaction    │
+       │ Detection Engine    │
+       └──────────┬──────────┘
+                  ↓
+          RDKit + ML Model
+                  ↓
+       ┌─────────────────────┐
+       │ Risk + Severity     │
+       │ + Explanation       │
+       └──────────┬──────────┘
+                  ↓
+          Clinical Summary
+                  ↓
+       👨‍⚕️ Physician Review`}
           </div>
         </section>
 

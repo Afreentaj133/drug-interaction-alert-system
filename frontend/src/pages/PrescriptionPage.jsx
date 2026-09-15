@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FileText, Upload, RefreshCw, CheckCircle2, AlertCircle, 
+  FileText, Upload, RefreshCw, CheckCircle2, AlertCircle, AlertTriangle,
   ArrowRight, ShieldCheck, Trash2, Edit3, Calendar, Plus, Info
 } from 'lucide-react';
 import { api } from '../services/api';
@@ -122,6 +122,23 @@ export default function PrescriptionPage({ setActivePage, setSelectedPatientId }
 
   const handleRemoveRow = (index) => {
     setReviewMedications(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddNewRow = () => {
+    setReviewMedications(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        selected: true,
+        drug_name: '',
+        dose: 'Standard dose',
+        frequency: 'Once daily',
+        route: 'Oral',
+        original_text: 'Manual Entry',
+        match_status: 'Matched',
+        confidence: 1.0
+      }
+    ]);
   };
 
   const handleConfirmAndTransfer = async () => {
@@ -347,6 +364,51 @@ export default function PrescriptionPage({ setActivePage, setSelectedPatientId }
             </pre>
           </details>
 
+          {/* Non-Medical Document Warning or Manual Row Action */}
+          {reviewMedications.length === 0 ? (
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: 'var(--radius-md)',
+              padding: '20px 24px',
+              marginBottom: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                <AlertTriangle size={26} color="#f87171" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <h4 style={{ margin: '0 0 6px', color: '#fca5a5', fontSize: '1rem', fontWeight: 700 }}>
+                    No Valid Medical Prescriptions or Medications Detected
+                  </h4>
+                  <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.6 }}>
+                    The uploaded document (<strong>{extractionResult.filename}</strong>) does not contain recognized pharmaceutical drugs, Rx formulations, or clinical dosage instructions. Non-medical files (such as academic certificates, guides, or general images) are strictly blocked by DIAS safety guardrails to avoid erroneous medication records.
+                  </p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+                <button
+                  onClick={handleAddNewRow}
+                  className="btn btn-outline"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem' }}
+                >
+                  <Plus size={14} /> + Add Medication Line Manually
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+              <button
+                onClick={handleAddNewRow}
+                className="btn btn-outline"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', padding: '5px 12px' }}
+              >
+                <Plus size={14} /> + Add Medication Line
+              </button>
+            </div>
+          )}
+
           {/* Review Table */}
           <div style={{ overflowX: 'auto', marginBottom: '24px' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
@@ -365,7 +427,7 @@ export default function PrescriptionPage({ setActivePage, setSelectedPatientId }
                 {reviewMedications.length === 0 ? (
                   <tr>
                     <td colSpan="7" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      No pharmaceutical entities recognized in this document.
+                      No pharmaceutical entities recognized in this document. Use "+ Add Medication Line Manually" to enter an item.
                     </td>
                   </tr>
                 ) : (

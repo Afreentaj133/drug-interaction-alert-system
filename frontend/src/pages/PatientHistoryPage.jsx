@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, Plus, Trash2, AlertTriangle, ShieldAlert, ShieldCheck, 
-  Activity, Pill, RefreshCw, FileText, CheckCircle2, ChevronRight, Info
+  Activity, Pill, RefreshCw, FileText, CheckCircle2, ChevronRight, Info, UserPlus, X, Sparkles
 } from 'lucide-react';
 import { api } from '../services/api';
 import RiskBadge from '../components/RiskBadge';
@@ -11,6 +11,20 @@ export default function PatientHistoryPage({ setActivePage, setSelectedPatientId
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Register Patient Modal state
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [newPatientId, setNewPatientId] = useState('');
+  const [newPatientName, setNewPatientName] = useState('');
+  const [newPatientAge, setNewPatientAge] = useState('');
+  const [newPatientSex, setNewPatientSex] = useState('Female');
+  const [newPatientConditions, setNewPatientConditions] = useState('');
+  const [newPatientAllergies, setNewPatientAllergies] = useState('');
+  const [newPatientHistory, setNewPatientHistory] = useState('');
+  const [newPatientSurgeries, setNewPatientSurgeries] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [registerError, setRegisterError] = useState(null);
+  const [successToast, setSuccessToast] = useState(null);
 
   // Add Medication form states
   const [showAddMed, setShowAddMed] = useState(false);
@@ -26,6 +40,53 @@ export default function PatientHistoryPage({ setActivePage, setSelectedPatientId
   // Polypharmacy screening states
   const [isScreening, setIsScreening] = useState(false);
   const [screeningResults, setScreeningResults] = useState(null);
+
+  const handleOpenRegisterModal = () => {
+    const randomId = `PT-${Math.floor(1000 + Math.random() * 9000)}`;
+    setNewPatientId(randomId);
+    setNewPatientName('');
+    setNewPatientAge('52');
+    setNewPatientSex('Female');
+    setNewPatientConditions('');
+    setNewPatientAllergies('');
+    setNewPatientHistory('');
+    setNewPatientSurgeries('');
+    setRegisterError(null);
+    setShowRegisterModal(true);
+  };
+
+  const handleRegisterPatient = async (e) => {
+    e.preventDefault();
+    if (!newPatientId.trim() || !newPatientName.trim()) {
+      setRegisterError('Patient ID and Full Name are required.');
+      return;
+    }
+    setIsRegistering(true);
+    setRegisterError(null);
+    try {
+      const payload = {
+        patient_id: newPatientId.trim(),
+        name: newPatientName.trim(),
+        age: newPatientAge ? parseInt(newPatientAge, 10) : null,
+        sex: newPatientSex,
+        conditions: newPatientConditions.trim() || null,
+        allergies: newPatientAllergies.trim() || null,
+        medical_history: newPatientHistory.trim() || null,
+        surgeries: newPatientSurgeries.trim() || null,
+      };
+      await api.createPatient(payload);
+      setShowRegisterModal(false);
+      setSuccessToast(`Patient ${payload.name} (${payload.patient_id}) created successfully!`);
+      setTimeout(() => setSuccessToast(null), 5000);
+      const updatedList = await api.getPatients();
+      setPatients(updatedList);
+      await loadPatientDetails(payload.patient_id);
+    } catch (err) {
+      setRegisterError(err.message || 'Failed to register patient');
+    } finally {
+      setIsRegistering(false);
+    }
+  };
 
   // Load patients on mount
   useEffect(() => {
@@ -160,39 +221,77 @@ export default function PatientHistoryPage({ setActivePage, setSelectedPatientId
         </button>
       </div>
 
+      {/* Success Notification Banner */}
+      {successToast && (
+        <div style={{
+          background: 'rgba(16, 185, 129, 0.15)',
+          border: '1px solid rgba(16, 185, 129, 0.4)',
+          borderRadius: 'var(--radius-md)',
+          padding: '12px 18px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          color: '#34d399',
+          boxShadow: '0 0 15px rgba(16, 185, 129, 0.2)'
+        }}>
+          <CheckCircle2 size={20} />
+          <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>{successToast}</span>
+        </div>
+      )}
+
       {/* Header & Patient Switcher */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', margin: '0 0 6px' }}>
-            Patient Clinical & Medication History
+            Patient Clinical &amp; Medication History
           </h1>
           <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.92rem' }}>
             Review chronic clinical context, track active regimens, and execute multi-drug interaction screening.
           </p>
         </div>
 
-        {/* Patient Selection Dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Select Patient:</label>
-          <select
-            value={selectedPatient ? selectedPatient.patient_id : ''}
-            onChange={(e) => loadPatientDetails(e.target.value)}
+        {/* Patient Selection & Registration Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Patient:</label>
+            <select
+              value={selectedPatient ? selectedPatient.patient_id : ''}
+              onChange={(e) => loadPatientDetails(e.target.value)}
+              style={{
+                background: 'var(--surface-card)',
+                color: '#fff',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                padding: '9px 14px',
+                fontSize: '0.9rem',
+                cursor: 'pointer'
+              }}
+            >
+              {patients.map(p => (
+                <option key={p.patient_id} value={p.patient_id}>
+                  {p.patient_id} — {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={handleOpenRegisterModal}
+            className="btn btn-primary"
             style={{
-              background: 'var(--surface-card)',
-              color: '#fff',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-md)',
-              padding: '8px 14px',
-              fontSize: '0.9rem',
-              cursor: 'pointer'
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '9px 16px',
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              boxShadow: '0 0 15px rgba(0, 210, 255, 0.35)'
             }}
           >
-            {patients.map(p => (
-              <option key={p.patient_id} value={p.patient_id}>
-                {p.patient_id} — {p.name}
-              </option>
-            ))}
-          </select>
+            <UserPlus size={16} />
+            + Register New Patient
+          </button>
         </div>
       </div>
 
@@ -647,6 +746,231 @@ export default function PatientHistoryPage({ setActivePage, setSelectedPatientId
                 )}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ================= REGISTER NEW PATIENT MODAL ================= */}
+      {showRegisterModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(2, 6, 23, 0.85)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#0b1329',
+            border: '1px solid rgba(0, 210, 255, 0.35)',
+            borderRadius: '16px',
+            maxWidth: '620px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            padding: '28px',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.8), 0 0 30px rgba(0, 210, 255, 0.18)'
+          }}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: '0 0 6px', fontSize: '1.25rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <UserPlus size={20} color="#00d2ff" />
+                  Register New Patient Profile
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                  Create a new clinical record to track conditions, chronic regimens, and medication safety.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowRegisterModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  borderRadius: '6px'
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {registerError && (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: 'var(--radius-md)',
+                padding: '10px 14px',
+                marginBottom: '16px',
+                color: '#f87171',
+                fontSize: '0.85rem'
+              }}>
+                {registerError}
+              </div>
+            )}
+
+            <form onSubmit={handleRegisterPatient}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    Patient ID *
+                  </label>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <input
+                      type="text"
+                      className="input-field"
+                      value={newPatientId}
+                      onChange={(e) => setNewPatientId(e.target.value)}
+                      placeholder="e.g. PT-1003"
+                      required
+                      style={{ fontFamily: 'monospace', fontWeight: 600 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setNewPatientId(`PT-${Math.floor(1000 + Math.random() * 9000)}`)}
+                      className="btn btn-outline"
+                      title="Generate new ID"
+                      style={{ padding: '6px 10px', fontSize: '0.75rem', flexShrink: 0 }}
+                    >
+                      Gen
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    Full Legal Name *
+                  </label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    value={newPatientName}
+                    onChange={(e) => setNewPatientName(e.target.value)}
+                    placeholder="e.g. Margaret Davies"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    Age (Years)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="120"
+                    className="input-field"
+                    value={newPatientAge}
+                    onChange={(e) => setNewPatientAge(e.target.value)}
+                    placeholder="e.g. 58"
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                    Biological Sex
+                  </label>
+                  <select
+                    className="input-field"
+                    value={newPatientSex}
+                    onChange={(e) => setNewPatientSex(e.target.value)}
+                  >
+                    <option value="Female">Female</option>
+                    <option value="Male">Male</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  Known Medical Conditions (Comma-separated)
+                </label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={newPatientConditions}
+                  onChange={(e) => setNewPatientConditions(e.target.value)}
+                  placeholder="e.g. Type 2 Diabetes, Hypertension, Osteoarthritis"
+                />
+              </div>
+
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#f87171', marginBottom: '6px' }}>
+                  Documented Drug Allergies
+                </label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={newPatientAllergies}
+                  onChange={(e) => setNewPatientAllergies(e.target.value)}
+                  placeholder="e.g. Penicillin, Sulfa drugs, Aspirin (or leave blank)"
+                />
+              </div>
+
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  Clinical Background &amp; Medical History
+                </label>
+                <textarea
+                  className="input-field"
+                  rows={2}
+                  value={newPatientHistory}
+                  onChange={(e) => setNewPatientHistory(e.target.value)}
+                  placeholder="e.g. Chronic Kidney Disease Stage 2; history of deep vein thrombosis."
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                  Past Surgeries / Interventions
+                </label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={newPatientSurgeries}
+                  onChange={(e) => setNewPatientSurgeries(e.target.value)}
+                  placeholder="e.g. Coronary artery bypass graft (2021), Appendectomy"
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterModal(false)}
+                  className="btn btn-outline"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={isRegistering}
+                  style={{ minWidth: '160px' }}
+                >
+                  {isRegistering ? (
+                    <>
+                      <RefreshCw size={14} className="spin" /> Registering...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={16} /> Save Patient Profile
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
